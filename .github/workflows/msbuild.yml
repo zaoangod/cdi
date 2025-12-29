@@ -91,7 +91,7 @@ jobs:
 
       - name: Create new release
         run: |
-          $date_version = (Get-Date -Format 'yyyyMMdd') + ".${{ github.run_number }}"
+          $date_version = (Get-Date -Format 'yyyyMMddHHmmss')
           gh release create latest "${{ env.ARTIFACT_NAME }}.zip" `
             --latest `
             --title "Build $date_version" `
