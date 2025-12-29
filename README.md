@@ -34,8 +34,7 @@ Creates a SMART data structure.
 
 - **Note:**
     - `CoInitializeEx` must be called before this function after loading the DLL.
-    - You should call this function first to create a `CDI_SMART` structure before using other functions except
-      `cdi_get_version`.
+    - You should call this function first to create a `CDI_SMART` structure before using other functions except `cdi_get_version`.
     - Call `cdi_destroy_smart` to free the memory when done.
 - **Parameters:** None.
 - **Return Value:** A pointer to a `CDI_SMART` structure for use with other functions.
@@ -64,8 +63,7 @@ Initializes the SMART data.
     - It scans all disks and collects S.M.A.R.T. information, which may take some time.
 - **Parameters:**
     - `ptr`: A pointer to the `CDI_SMART` structure.
-    - `flags`: Various options for disk processing. See the **Disk Processing Options** section below. The recommended
-      value is `0x01FBFF81`.
+    - `flags`: Various options for disk processing. See the **Disk Processing Options** section below. The recommended value is `0x01FBFF81`.
 - **Return Value:** None.
 
 ---
@@ -160,8 +158,7 @@ Gets the S.M.A.R.T. data format string.
     - `ptr`: A pointer to the `CDI_SMART` structure.
     - `index`: The disk index.
 - **Return Value:** A string representing the S.M.A.R.T. data format. Use `cdi_free_string` to release the memory.
-    - Possible values are `RawValue(7)`, `RawValue(8)`, `Cur RawValue(8)`, `Cur Wor --- RawValue(6)`,
-      `Cur Wor Thr RawValue(6)`, `Cur Wor --- RawValue(7)` and `Cur Wor Thr RawValue(7)`.
+    - Possible values are `RawValue(7)`, `RawValue(8)`, `Cur RawValue(8)`, `Cur Wor --- RawValue(6)`, `Cur Wor Thr RawValue(6)`, `Cur Wor --- RawValue(7)` and `Cur Wor Thr RawValue(7)`.
 
 ---
 
