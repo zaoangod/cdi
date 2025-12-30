@@ -94,7 +94,7 @@ jobs:
           $date_version = (Get-Date -Format 'yyyyMMddHHmmss')
           gh release create latest "${{ env.ARTIFACT_NAME }}.zip" `
             --latest `
-            --title "Build $date_version" `
+            --title "Build-$date_version" `
             --notes-file "release_notes.txt"
         env:
           #GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
