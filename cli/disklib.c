@@ -30,7 +30,7 @@ GetDiskHandleById(BOOL bCdrom, BOOL bWrite, DWORD dwId)
 	else
 		swprintf(PhyPath, 28, L"\\\\.\\PhysicalDrive%u", dwId);
 	return CreateFileW(PhyPath, bWrite ? (GENERIC_READ | GENERIC_WRITE) : GENERIC_READ,
-		FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, 0);
+		FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 }
 
 static LPCWSTR
