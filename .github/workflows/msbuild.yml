@@ -18,13 +18,27 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install MFC
+      - name: Install v143 MFC and ATL
         run: |
           $installPath = & "C:\ProgramData\Chocolatey\bin\vswhere.exe" -products * -latest -property installationPath
           Write-Host "VS Install Path: $installPath"
           $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-          & $vsInstaller modify --installPath $installPath --add Microsoft.VisualStudio.Component.VC.ATLMFC --quiet --norestart --wait
-          Write-Host "MFC installation exit code: $LASTEXITCODE"
+          & $vsInstaller modify --installPath $installPath `
+            --add Microsoft.VisualStudio.Component.VC.14.44.17.14.MFC `
+            --add Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL `
+            --quiet --norestart --wait
+          $exitCode = $LASTEXITCODE
+          Write-Host "v143 MFC/ATL installation exit code: $exitCode"
+          if ($exitCode -ne 0 -and $exitCode -ne 3010) { exit $exitCode }
+
+      - name: Verify v143 MFC installation
+        run: |
+          $installPath = & "C:\ProgramData\Chocolatey\bin\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.14.44.17.14.MFC -latest -property installationPath
+          if ([string]::IsNullOrEmpty($installPath)) {
+            Write-Error "Microsoft.VisualStudio.Component.VC.14.44.17.14.MFC is not installed"
+            exit 1
+          }
+          Write-Host "v143 MFC verified at: $installPath"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
