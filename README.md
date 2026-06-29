@@ -5,7 +5,7 @@ on [CrystalDiskInfo](https://github.com/hiyohiyo/CrystalDiskInfo).
 
 ## Supported Platforms
 
-- Windows XP and later
+- Windows 10 and later
 - x64, x86 and Arm64 architectures
 
 ## Credits
