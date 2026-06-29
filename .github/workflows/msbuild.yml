@@ -18,6 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install MFC
+        run: |
+          $vsWhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
+          $installPath = & $vsWhere -products * -latest -property installationPath
+          $vsInstaller = Join-Path (Split-Path $installPath -Parent) "..\Installer\vs_installer.exe"
+          if (!(Test-Path $vsInstaller)) {
+            $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          }
+          Start-Process -FilePath $vsInstaller -ArgumentList 'modify','--installPath',$installPath,'--add','Microsoft.VisualStudio.Component.VC.ATLMFC','--quiet','--norestart' -Wait -NoNewWindow
+
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
