@@ -20,13 +20,11 @@ jobs:
 
       - name: Install MFC
         run: |
-          $vsWhere = "C:\ProgramData\Chocolatey\bin\vswhere.exe"
-          $installPath = & $vsWhere -products * -latest -property installationPath
-          $vsInstaller = Join-Path (Split-Path $installPath -Parent) "..\Installer\vs_installer.exe"
-          if (!(Test-Path $vsInstaller)) {
-            $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
-          }
-          Start-Process -FilePath $vsInstaller -ArgumentList 'modify','--installPath',$installPath,'--add','Microsoft.VisualStudio.Component.VC.ATLMFC','--quiet','--norestart' -Wait -NoNewWindow
+          $installPath = & "C:\ProgramData\Chocolatey\bin\vswhere.exe" -products * -latest -property installationPath
+          Write-Host "VS Install Path: $installPath"
+          $vsInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+          & $vsInstaller modify --installPath $installPath --add Microsoft.VisualStudio.Component.VC.ATLMFC --quiet --norestart --wait
+          Write-Host "MFC installation exit code: $LASTEXITCODE"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
