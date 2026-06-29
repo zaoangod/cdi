@@ -1,4 +1,4 @@
-﻿/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 //       Author : hiyohiyo
 //         Mail : hiyohiyo@crystalmark.info
 //          Web : https://crystalmark.info/
@@ -37,29 +37,9 @@
 
 CAtaSmart::CAtaSmart()
 {
-	m_bAtaPassThrough = FALSE;
-	m_bAtaPassThroughSmart = FALSE;
-	m_bNVMeStorageQuery = FALSE;
-
-	if (IsWindowsVersionOrGreaterFx(10, 0))
-	{
-		m_bAtaPassThrough = TRUE;
-		m_bAtaPassThroughSmart = TRUE;
-		m_bNVMeStorageQuery = TRUE;
-	}
-	else if (IsWindowsVersionOrGreaterFx(6, 0) || IsWindowsVersionOrGreaterFx(5, 2))
-	{
-		m_bAtaPassThrough = TRUE;
-		m_bAtaPassThroughSmart = TRUE;
-	}
-	else if (IsWindowsVersionOrGreaterFx(5, 1))
-	{
-		if (IsWindowsVersionOrGreaterFx(5, 1, 2))
-		{
-			m_bAtaPassThrough = TRUE;
-			m_bAtaPassThroughSmart = TRUE;
-		}
-	}
+	m_bAtaPassThrough = TRUE;
+	m_bAtaPassThroughSmart = TRUE;
+	m_bNVMeStorageQuery = TRUE;
 
 	// 2023/02/24 Lock Handle: Compatible with SIV
 	hMutexJMicron = CreateWorldMutex(L"Access_JMicron_SMART");
@@ -836,11 +816,7 @@ VOID CAtaSmart::Init(BOOL useWmi, BOOL advancedDiskSearch, PBOOL flagChangeDisk,
 				}
 				else 
 				{
-					long securityFlag = 0;
-					if(IsWindowsVersionOrGreaterFx(6, 0))
-					{
-						securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT;
-					}
+					long securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT;
 
 					DebugPrint(_T("ConnectServer()"));
 					if (FAILED(pIWbemLocator->ConnectServer(_bstr_t(L"\\\\.\\root\\cimv2"),
@@ -10430,11 +10406,6 @@ BOOL CAtaSmart::GetSmartAttributeWmi(ATA_SMART_INFO* asi)
 
 BOOL CAtaSmart::GetSmartThresholdWmi(ATA_SMART_INFO* asi)
 {
-	if(! IsWindowsVersionOrGreaterFx(5, 1))
-	{
-		return FALSE;
-	}
-
 	return GetSmartInfoWmi(WMI_SMART_THRESHOLD, asi);
 }
 
@@ -10468,8 +10439,7 @@ BOOL CAtaSmart::GetSmartInfoWmi(DWORD type, ATA_SMART_INFO* asi)
 		if(SUCCEEDED(CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER,
 				IID_IWbemLocator, (LPVOID *)&pIWbemLocator)))
 		{
-			long securityFlag = 0;
-			if(IsWindowsVersionOrGreaterFx(6, 0)){securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT;}
+			long securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT;
 			if(SUCCEEDED(pIWbemLocator->ConnectServer(_bstr_t(L"\\\\.\\root\\WMI"), 
 				NULL, NULL, 0L, securityFlag, NULL, NULL, &pIWbemServices)))
 			{

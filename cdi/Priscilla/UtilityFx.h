@@ -45,9 +45,7 @@ BOOL WritePrivateProfileStringFx(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR l
 //   Check CodeSign
 ////------------------------------------------------
 
-#if _MSC_VER > 1310
 BOOL CheckCodeSign(LPCWSTR certName, LPCWSTR filePath);
-#endif
 
 ////------------------------------------------------
 //   Play Sound

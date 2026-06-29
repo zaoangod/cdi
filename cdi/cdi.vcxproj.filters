@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Headers">
@@ -34,9 +34,6 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="Priscilla\UtilityFx.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Priscilla\md5.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -75,9 +72,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="JMicronUsbRaidInit.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Priscilla\md5.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">

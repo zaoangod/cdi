@@ -1,4 +1,4 @@
-﻿/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 //       Author : hiyohiyo
 //         Mail : hiyohiyo@crystalmark.info
 //          Web : https://crystalmark.info/
@@ -52,11 +52,7 @@ void DebugPrint(CString cstr)
 		if ((ptrEnd = _tcsrchr(file, '.')) != NULL)
 		{
 			*ptrEnd = '\0';
-#if _MSC_VER <= 1310
-			_tcscat(file, _T(".log"));
-#else
-			_tcscat_s(file, MAX_PATH, _T(".log"));
-#endif		
+			_tcscat_s(file, MAX_PATH, _T(".log"));		
 		}
 		DeleteFile(file);
 		flag = FALSE;
@@ -68,11 +64,7 @@ void DebugPrint(CString cstr)
 	}
 
 	FILE* fp = NULL;
-#if _MSC_VER <= 1310
-	fp = _tfopen(file, _T("ac"));
-#else
 	_tfopen_s(&fp, file, _T("ac"));
-#endif
 	
 	if (fp != NULL)
 	{
@@ -112,19 +104,11 @@ int GetFileVersion(const TCHAR* file, TCHAR* version)
 			LOWORD(Locale), HIWORD(Locale), _T("FileVersion"));
 		VerQueryValue(vbuf, str, (void**)&buf, &size);
 
-#if _MSC_VER <= 1310
-		_tcscpy(str, buf);
-#else
 		_tcscpy_s(str, 256, buf);
-#endif
 		
 		if (version != NULL)
 		{
-#if _MSC_VER <= 1310
-			_tcscpy(version,buf);
-#else
 			_tcscpy_s(version, 256, buf);
-#endif
 		}
 	}
 	delete[] vbuf;
@@ -170,14 +154,9 @@ BOOL IsFileExist(const TCHAR* path)
 {
 	FILE* fp = NULL;
 
-#if _MSC_VER <= 1310
-	fp = _tfopen(path, _T("rb"));
-	if (fp == NULL)
-#else
 	errno_t err = 0;
 	err = _tfopen_s(&fp, path, _T("rb"));
 	if (err != 0 || fp == NULL)
-#endif
 	{
 		return FALSE;
 	}
@@ -220,11 +199,7 @@ ULONGLONG GetTickCountFx()
 	}
 	else
 	{
-#if _MSC_VER <= 1310
-		return (ULONGLONG)GetTickCount();
-#else
 		return _Pragma("warning(suppress: 28159)") (ULONGLONG)GetTickCount();
-#endif
 	}
 }
 
@@ -286,11 +261,7 @@ DWORD GetPrivateProfileStringFx(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR lp
 	value.Replace(_T("%#3D"), _T("="));
 	value.Replace(_T("%#22"), _T("\""));
 
-#if _MSC_VER <= 1310
-	_tcscpy(lpReturnedString, (LPCTSTR)value);
-#else
 	_tcscpy_s(lpReturnedString, nSize, (LPCTSTR)value);
-#endif
 
 	return result;
 }
@@ -322,7 +293,6 @@ BOOL WritePrivateProfileStringFx(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR l
 ////------------------------------------------------
 //   Check CodeSign
 ////------------------------------------------------
-#if _MSC_VER > 1310
 #include <Softpub.h>
 #pragma comment(lib, "Wintrust.lib")
 #pragma comment(lib, "Crypt32.lib")
@@ -376,7 +346,7 @@ BOOL CheckCodeSign(LPCWSTR certName, LPCWSTR filePath)
 
 	return TRUE;
 }
-#endif
+
 
 ////------------------------------------------------
 //   Play Sound
@@ -405,10 +375,6 @@ void ShowMciError(DWORD error)
 
 BOOL AlertSound(const CString& alertSoundPath, int volume)
 {
-#if _MSC_VER <= 1310
-	PlaySound(alertSoundPath, NULL, SND_SYNC);
-#else
-
 	static MCI_OPEN_PARMS mop = { 0 };
 	static MCI_PLAY_PARMS mpp = { 0 };
 	static MCI_GENERIC_PARMS mgp = { 0 };
@@ -477,7 +443,7 @@ BOOL AlertSound(const CString& alertSoundPath, int volume)
 		// ShowMciError(error);
 		return FALSE;
 	}
-#endif
+
 
 	return TRUE;
 }
@@ -487,7 +453,6 @@ BOOL AlertSound(const CString& alertSoundPath, int volume)
 //   Hash
 ////------------------------------------------------
 
-#if _MSC_VER > 1310
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -535,25 +500,7 @@ CStringA MD5(const CStringA& str)
 
 	return hashStr;
 }
-#else
-#include "md5.h"
-CStringA MD5(const CStringA& str)
-{
-	char* input = (char*)(LPCSTR)str;
-	uint8_t result[16] = { 0 };
-	md5String(input, result);
 
-	CStringA hashStr;
-	for (int i = 0; i < 16; ++i)
-	{
-		CStringA byteStr;
-		byteStr.Format("%02x", result[i]);
-		hashStr += byteStr;
-	}
-
-	return hashStr;
-}
-#endif
 
 ////------------------------------------------------
 //   Character Converter
@@ -576,232 +523,6 @@ CStringA URLEncode(const CStringA& str)
 	return encoded;
 }
 
-#if _MSC_VER <= 1310
-
-// https://github.com/roytam1/RetroZilla/commit/e44dd98dbf2effeff3305430835e889d76ec73b4#diff-065242b491de972d8519dbbae0c4c8dfb6a1a3c3eb8b9936d56a4c1ad63ec7abR126-R282
-/*** UTF16<-->UTF8 functions minicking MultiByteToWideChar/WideCharToMultiByte ***/
-int utf8GetMaskIndex(unsigned char n) {
-	if ((unsigned char)(n + 2) < 0xc2) return 1; // 00~10111111, fe, ff
-	if (n < 0xe0)                      return 2; // 110xxxxx
-	if (n < 0xf0)                      return 3; // 1110xxxx
-	if (n < 0xf8)                      return 4; // 11110xxx
-	if (n < 0xfc)                      return 5; // 111110xx
-	return 6; // 1111110x
-}
-
-int wc2Utf8Len(wchar_t** n, int* len) {
-	wchar_t* ch = *n, ch2;
-	int qch;
-	if ((0xD800 <= *ch && *ch <= 0xDBFF) && *len) {
-		ch2 = *(ch + 1);
-		if (0xDC00 <= ch2 && ch2 <= 0xDFFF) {
-			qch = 0x10000 + (((*ch - 0xD800) & 0x3ff) << 10) + ((ch2 - 0xDC00) & 0x3ff);
-			(*n)++;
-			(*len)--;
-		}
-	}
-	else
-		qch = (int)*ch;
-
-	if (qch <= 0x7f)           return 1;
-	else if (qch <= 0x7ff)     return 2;
-	else if (qch <= 0xffff)    return 3;
-	else if (qch <= 0x1fffff)  return 4;
-	else if (qch <= 0x3ffffff) return 5;
-	else                       return 6;
-}
-
-int Utf8ToWideChar(unsigned int unused1, unsigned long unused2, char* sb, int ss, wchar_t* wb, int ws) {
-	static const unsigned char utf8mask[] = { 0, 0xff, 0x1f, 0x0f, 0x07, 0x03, 0x01 };
-	char* p = (char*)(sb);
-	char* e = (char*)(sb + ss);
-	wchar_t* w = wb;
-	int cnt = 0, t, qch;
-
-	if (ss < 1) {
-		ss = lstrlenA(sb);
-		e = (char*)(sb + ss);
-	}
-
-	if (wb && ws) {
-		for (; p < e; ++w) {
-			t = utf8GetMaskIndex(*p);
-			qch = (*p++ & utf8mask[t]);
-			while (p < e && --t)
-				qch <<= 6, qch |= (*p++) & 0x3f;
-			if (qch < 0x10000) {
-				if (cnt <= ws)
-					*w = (wchar_t)qch;
-				cnt++;
-			}
-			else {
-				if (cnt + 2 <= ws) {
-					*w++ = (wchar_t)(0xD800 + (((qch - 0x10000) >> 10) & 0x3ff)),
-						*w = (wchar_t)(0xDC00 + (((qch - 0x10000)) & 0x3ff));
-				}
-				cnt += 2;
-			}
-		}
-		if (cnt < ws) {
-			*(wb + cnt) = 0;
-			return cnt;
-		}
-		else {
-			*(wb + ws) = 0;
-			return ws;
-		}
-	}
-	else {
-		for (t; p < e;) {
-			t = utf8GetMaskIndex(*p);
-			qch = (*p++ & utf8mask[t]);
-			while (p < e && --t)
-				qch <<= 6, qch |= (*p++) & 0x3f;
-			if (qch < 0x10000)
-				cnt++;
-			else
-				cnt += 2;
-		}
-		return cnt + 1;
-	}
-}
-
-int WideCharToUtf8(unsigned int unused1, unsigned long unused2, wchar_t* wb, int ws, char* sb, int ss) {
-	wchar_t* p = (wchar_t*)(wb);
-	wchar_t* e = (wchar_t*)(wb + ws);
-	wchar_t* oldp;
-	char* s = sb;
-	int cnt = 0, qch, t;
-
-	if (ws < 1) {
-		ws = lstrlenW(wb);
-		e = (wchar_t*)(wb + ws);
-	}
-
-	if (sb && ss) {
-		for (t; p < e; ++p) {
-			oldp = p;
-			t = wc2Utf8Len(&p, &ws);
-
-			if (p != oldp) { /* unicode surrogates encountered */
-				qch = 0x10000 + (((*oldp - 0xD800) & 0x3ff) << 10) + ((*p - 0xDC00) & 0x3ff);
-			}
-			else
-				qch = *p;
-
-			if (qch <= 0x7f)
-				*s++ = (char)(qch),
-				cnt++;
-			else if (qch <= 0x7ff)
-				*s++ = 0xc0 | (char)(qch >> 6),
-				*s++ = 0x80 | (char)(qch & 0x3f),
-				cnt += 2;
-			else if (qch <= 0xffff)
-				*s++ = 0xe0 | (char)(qch >> 12),
-				*s++ = 0x80 | (char)((qch >> 6) & 0x3f),
-				*s++ = 0x80 | (char)(qch & 0x3f),
-				cnt += 3;
-			else if (qch <= 0x1fffff)
-				*s++ = 0xf0 | (char)(qch >> 18),
-				*s++ = 0x80 | (char)((qch >> 12) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 6) & 0x3f),
-				*s++ = 0x80 | (char)(qch & 0x3f),
-				cnt += 4;
-			else if (qch <= 0x3ffffff)
-				*s++ = 0xf8 | (char)(qch >> 24),
-				*s++ = 0x80 | (char)((qch >> 18) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 12) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 6) & 0x3f),
-				*s++ = 0x80 | (char)(qch & 0x3f),
-				cnt += 5;
-			else
-				*s++ = 0xfc | (char)(qch >> 30),
-				*s++ = 0x80 | (char)((qch >> 24) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 18) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 12) & 0x3f),
-				*s++ = 0x80 | (char)((qch >> 6) & 0x3f),
-				*s++ = 0x80 | (char)(qch & 0x3f),
-				cnt += 6;
-		}
-		if (cnt < ss) {
-			*(sb + cnt) = 0;
-			return cnt;
-		}
-		else {
-			*(sb + ss) = 0;
-			return ss;
-		}
-	}
-	else {
-		for (t; p < e; ++p) {
-			t = wc2Utf8Len(&p, &ws);
-			cnt += t;
-		}
-		return cnt + 1;
-	}
-}
-/*** Ends ***/
-
-#ifdef UNICODE
-CStringA UTF16toUTF8(const CStringW& utf16str)
-{
-	if (IsNT3() || IsNT4())
-	{
-		CStringA utf8str;
-		WCHAR* utf16string = new WCHAR[(utf16str.GetLength() + 1) * 2];
-		wsprintf(utf16string, L"%s", utf16str);
-		int utf16Length = utf16str.GetLength();
-		int utf8Length = WideCharToUtf8(CP_UTF8, 0, utf16string, -1, NULL, 0);
-		if (utf8Length <= 0) { return ""; }
-		WideCharToUtf8(CP_UTF8, 0, utf16string, -1, utf8str.GetBuffer(utf8Length), utf8Length);
-		utf8str.ReleaseBuffer();
-		delete utf16string;
-		return utf8str;
-	}
-	else
-	{
-		CStringA utf8str;
-		int utf8Length = WideCharToMultiByte(CP_UTF8, 0, utf16str, -1, NULL, 0, NULL, NULL);
-		if (utf8Length <= 0) { return ""; }
-		WideCharToMultiByte(CP_UTF8, 0, utf16str, -1, utf8str.GetBuffer(utf8Length), utf8Length, NULL, NULL);
-		utf8str.ReleaseBuffer();
-		return utf8str;
-	}
-}
-
-CStringW UTF8toUTF16(const CStringA& utf8str)
-{
-	CStringW utf16str;
-	CHAR* utf8string = new CHAR[(utf8str.GetLength() + 1) * 2];
-	sprintf(utf8string, "%s", utf8str);
-	int utf8Length = utf8str.GetLength();
-	int utf16Length = Utf8ToWideChar(1200, 0, utf8string, -1, NULL, 0);
-	if (utf16Length <= 0) { return L""; }
-	Utf8ToWideChar(1200, 0, utf8string, -1, utf16str.GetBuffer(utf16Length), utf16Length);
-	utf16str.ReleaseBuffer();
-	delete utf8string;
-	return utf16str;
-}
-
-#else
-CStringA ANSItoUTF8(const CStringA& ansiStr)
-{
-	int utf16Length = MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, NULL, 0);
-	if (utf16Length <= 0) { return ""; }
-	CStringW utf16str;
-	MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, utf16str.GetBuffer(utf16Length), utf16Length);
-	utf16str.ReleaseBuffer();
-
-	CStringA utf8str;
-	int utf8Length = WideCharToUtf8(CP_UTF8, 0, utf16str.GetBuffer(utf16Length), -1, NULL, 0);
-	if (utf8Length <= 0) { return ""; }
-	WideCharToUtf8(CP_UTF8, 0, utf16str.GetBuffer(utf16Length), -1, utf8str.GetBuffer(utf8Length), utf8Length);
-	utf8str.ReleaseBuffer();
-	return utf8str;
-}
-#endif
-#else
-
 CStringA UTF16toUTF8(const CStringW& utf16str)
 {
 	CStringA utf8str(CW2A(utf16str, CP_UTF8));
@@ -813,6 +534,17 @@ CStringW UTF8toUTF16(const CStringA& utf8str)
 	CStringW utf16str;
 	utf16str = CA2W(utf8str);
 	return utf16str;
+}
+
+#ifndef UNICODE
+CStringA ANSItoUTF8(const CStringA& ansiStr)
+{
+	int utf16Length = MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, NULL, 0);
+	if (utf16Length <= 0) { return ""; }
+	CStringW utf16str;
+	MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, utf16str.GetBuffer(utf16Length), utf16Length);
+	utf16str.ReleaseBuffer();
+	return UTF16toUTF8(utf16str);
 }
 #endif
 
@@ -844,11 +576,7 @@ void SetClipboardText(CString clip)
 			buffer = (TCHAR*)GlobalLock(clipbuffer);
 			if (buffer != NULL)
 			{
-#if _MSC_VER <= 1310
-				_tcscpy(buffer, LPCTSTR(clip));
-#else
 				_tcscpy_s(buffer, clip.GetLength() + 1, LPCTSTR(clip));
-#endif
 			}
 			GlobalUnlock(clipbuffer);
 #ifdef UNICODE

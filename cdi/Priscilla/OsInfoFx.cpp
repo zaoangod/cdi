@@ -1,4 +1,4 @@
-﻿/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 //       Author : hiyohiyo
 //         Mail : hiyohiyo@crystalmark.info
 //          Web : https://crystalmark.info/
@@ -36,7 +36,6 @@ BOOL GetVersionFx(POSVERSIONINFOEXW osvi)
 	return FALSE;
 }
 
-#if _MSC_VER > 1310
 BOOL IsWindowsVersionOrGreaterFx(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
 	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
@@ -54,9 +53,7 @@ BOOL IsWindowsBuildOrGreater(DWORD build)
 	GetVersionFx(&osvi);
 	return (osvi.dwBuildNumber >= build);
 }
-#endif
 
-#if _MSC_VER > 1310
 BOOL IsX64()
 {
 	static BOOL b = -1;
@@ -284,97 +281,37 @@ BOOL IsDotNet48()
 
 BOOL IsNT5()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = !IsWindowsVersionOrGreaterFx(6, 0) && IsWindowsVersionOrGreaterFx(5, 0) ? TRUE : FALSE;
-	}
-	return b;
+	return FALSE;
 }
 
 BOOL IsNT6orLater()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = IsWindowsVersionOrGreaterFx(6, 0) ? TRUE : FALSE;
-	}
-	return b;
+	return TRUE;
 }
 
 BOOL IsWin2k()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = IsWindowsVersionOrGreaterFx(5, 0) && !IsWindowsVersionOrGreaterFx(5, 1) ? TRUE : FALSE;
-	}
-	return b;
+	return FALSE;
 }
 
 BOOL IsWinXpOrLater()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = IsWindowsVersionOrGreaterFx(5, 1) ? TRUE : FALSE;
-	}
-	return b;
+	return TRUE;
 }
 
 BOOL IsWinXpLuna()
 {
-	static BOOL xp = -1;
-	BOOL b = FALSE;
-	if (xp == -1)
-	{
-		xp = IsWindowsVersionOrGreaterFx(5, 1) && !IsWindowsVersionOrGreaterFx(6, 0) ? TRUE : FALSE;
-	}
-	if (xp == FALSE)
-	{ 
-		return FALSE;
-	}
-
-	// Luna Check
-	DWORD type = REG_DWORD;
-	ULONG size = 256;
-	HKEY  hKey = NULL;
-	BYTE  buf[256] = {0};
-	CString cstr;
-
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\ThemeManager\\"), 0, KEY_READ, &hKey) == ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx(hKey, _T("ThemeActive"), NULL, &type, buf, &size) == ERROR_SUCCESS)
-		{
-			cstr = (TCHAR*)buf;
-			if (cstr.Find(_T("1")) == 0)
-			{
-				b = TRUE;
-			}
-		}
-		RegCloseKey(hKey);		
-	}
-	return b;
+	return FALSE;
 }
 
 BOOL IsWin8orLater()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = IsWindowsVersionOrGreaterFx(6, 2) ? TRUE : FALSE;
-	}
-	return b;
+	return TRUE;
 }
 
 BOOL IsWin81orLater()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = IsWindowsVersionOrGreaterFx(6, 3) ? TRUE : FALSE;
-	}
-	return b;
+	return TRUE;
 }
 
 BOOL IsDarkModeSupport()
@@ -389,19 +326,7 @@ BOOL IsDarkModeSupport()
 
 BOOL HasSidebar()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = FALSE;
-		OSVERSIONINFOEXW osvi;
-		GetVersionFx(&osvi);
-
-		if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion < 2 && osvi.wProductType == VER_NT_WORKSTATION)
-		{
-			b = TRUE;
-		}
-	}
-	return b;
+	return FALSE;
 }
 
 DWORD GetIeVersion()
@@ -451,7 +376,6 @@ DWORD GetIeVersion()
 
 	return ieVersion;
 }
-#endif
 
 BOOL IsNT3()
 {
@@ -485,22 +409,7 @@ BOOL IsPC98()
 
 BOOL IsNT51orlater()
 {
-	static BOOL b = -1;
-	if (b == -1)
-	{
-		b = FALSE;
-
-		OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
-		GetVersionFx(&osvi);
-
-		if ((osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
-			&&
-			((osvi.dwMajorVersion == 5 && osvi.dwMinorVersion >= 1) || (osvi.dwMajorVersion > 5)))
-		{
-			b = TRUE;
-		}
-	}
-	return b;
+	return TRUE;
 }
 
 BOOL IsRunningOnWine()
@@ -521,105 +430,12 @@ void GetOsName(CString& osFullName, CString& name, CString& version, CString& ar
 	CString osNameWmi;
 	CString cstr;
 
-#if _MSC_VER <= 1310
-	// For Win9x
-	OSVERSIONINFO osv = { 0 };
-	osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx((OSVERSIONINFO*)&osv);
-
-	if (osv.dwPlatformId == VER_PLATFORM_WIN32s)
-	{
-		osFullName = _T("Windows 3.x + Win32s");
-		name = osFullName;
-		return;
-	}
-	else if (osv.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-	{
-		switch (osv.dwMinorVersion)
-		{
-		case 0: // Windows 95
-			if (LOWORD(osv.dwBuildNumber) >= 1214)
-			{
-				osName = _T("Windows 95 OSR2.5");
-			}
-			else if (LOWORD(osv.dwBuildNumber) >= 1212)
-			{
-				osName = _T("Windows 95 OSR2.1");
-			}
-			else if (LOWORD(osv.dwBuildNumber) >= 1111)
-			{
-				osName = _T("Windows 95 OSR2");
-			}
-			else
-			{
-				osName = _T("Windows 95");
-			}
-			break;
-		case 10: // Windows 98
-			if (LOWORD(osv.dwBuildNumber) >= 2222)
-			{
-				osName = _T("Windows 98 Second Edition");
-			}
-			else if (LOWORD(osv.dwBuildNumber) >= 2000)
-			{
-				osName = _T("Windows 98 SP1");
-			}
-			else
-			{
-				osName = _T("Windows 98");
-			}
-			break;
-		case 90:
-			osName = _T("Windows Me");
-			break;
-		default:
-			osName = _T("Windows 9x");
-			break;
-		}
-		osVersion.Format(_T("%d.%d"), osv.dwMajorVersion, osv.dwMinorVersion);
-		osBuild.Format(_T("%d"), LOWORD(osv.dwBuildNumber));
-		osFullName.Format(_T("%s [%s Build %s]"), (LPCTSTR)osName, (LPCTSTR)osVersion, (LPCTSTR)osBuild);
-
-		name = osName;
-		version.Format(_T("%s Build %s"), (LPCTSTR)osVersion, (LPCTSTR)osBuild);
-		architecture = _T("x86");
-
-		return;
-	}
-#endif
-
-#if _MSC_VER > 1310
-	#ifdef UNICODE
-		OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
-		GetVersionFx((OSVERSIONINFOEXW*)&osvi);
-	#else
-		OSVERSIONINFOEX osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
-		GetVersionEx((OSVERSIONINFO*)&osvi);
-	#endif
+#ifdef UNICODE
+	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
+	GetVersionFx((OSVERSIONINFOEXW*)&osvi);
 #else
-	OSVERSIONINFOEXW osviw = { sizeof(osviw), 0, 0, 0, 0, {0}, 0, 0 };
 	OSVERSIONINFOEX osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
-
 	GetVersionEx((OSVERSIONINFO*)&osvi);
-	if (osvi.dwMajorVersion == 0) // Windows NT 3.51, NT 4.0 SP4 or earlier
-	{
-		osvi.dwMajorVersion = osv.dwMajorVersion;
-		osvi.dwMinorVersion = osv.dwMinorVersion;
-		osvi.dwBuildNumber = osv.dwBuildNumber;
-		osvi.dwPlatformId = osv.dwPlatformId;
-		wsprintf(osvi.szCSDVersion, osv.szCSDVersion);
-	}
-
-	if (osvi.dwMajorVersion >= 6 && GetVersionFx((OSVERSIONINFOEXW*)&osviw))
-	{
-		osvi.dwMajorVersion = osviw.dwMajorVersion;
-		osvi.dwMinorVersion = osviw.dwMinorVersion;
-		osvi.dwBuildNumber = osviw.dwBuildNumber;
-		osvi.wServicePackMajor = osviw.wServicePackMajor;
-		osvi.wServicePackMinor = osviw.wServicePackMinor;
-		osvi.wSuiteMask = osviw.wSuiteMask;
-		osvi.wProductType = osviw.wProductType;
-	}
 #endif
 
 	GetOsNameWmi(osNameWmi);
@@ -1001,11 +817,7 @@ void GetOsName(CString& osFullName, CString& name, CString& version, CString& ar
 					TCHAR str[256] = {0};
 					UINT length = GetWindowsDirectory(path, MAX_PATH);
 
-#if _MSC_VER <= 1310
-					_tcscat(path, _T("\\ehome\\ehshell.exe"));
-#else
-					_tcscat_s(path, MAX_PATH, _T("\\ehome\\ehshell.exe"));
-#endif				
+					_tcscat_s(path, MAX_PATH, _T("\\ehome\\ehshell.exe"));				
 
 					if (length != 0 && GetFileVersion(path, str))
 					{
@@ -1066,7 +878,6 @@ void GetOsName(CString& osFullName, CString& name, CString& version, CString& ar
 	osVersion.Format(_T("%d.%d"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	osBuild.Format(_T("%d"), osvi.dwBuildNumber);
 
-#if _MSC_VER > 1310
 	if(IsX64())
 	{
 		osArchitecture = _T("x64");
@@ -1087,9 +898,6 @@ void GetOsName(CString& osFullName, CString& name, CString& version, CString& ar
 	{
 		osArchitecture = _T("x86");
 	}
-#else
-	osArchitecture = _T("x86");
-#endif
 
 	// for Unknown Edition
 	if (osType.IsEmpty())
@@ -1161,9 +969,7 @@ void GetOsName(CString& osFullName, CString& name, CString& version, CString& ar
 //------------------------------------------------
 
 //warning : enum3, enum class
-#if _MSC_VER > 1310
 #pragma warning(disable : 26812)
-#endif
 
 #include <comdef.h>
 #include <comutil.h>
@@ -1195,17 +1001,12 @@ void GetOsNameWmi(CString& osName)
 		if (SUCCEEDED(CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER,
 			IID_IWbemLocator, (LPVOID*)&pIWbemLocator)))
 		{
-			long securityFlag = 0;
-#if _MSC_VER > 1310
-			if (IsWindowsVersionOrGreaterFx(6, 0)) { securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT; }
-#endif
+			long securityFlag = WBEM_FLAG_CONNECT_USE_MAX_WAIT;
 			if (SUCCEEDED(pIWbemLocator->ConnectServer(_bstr_t(_T("root\\cimv2")),
 				NULL, NULL, 0L, securityFlag, NULL, NULL, &pIWbemServices)))
 			{
-#if _MSC_VER > 1310
 				if (SUCCEEDED(CoSetProxyBlanket(pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE,
 					NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE)))
-#endif
 				{
 					if (SUCCEEDED(pIWbemServices->ExecQuery(_bstr_t(_T("WQL")),
 						_bstr_t(query), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumCOMDevs)))
@@ -1249,164 +1050,3 @@ void GetOsNameWmi(CString& osName)
 	SAFE_RELEASE(pIWbemLocator);
 }
 
-#if _MSC_VER <= 1310
-#ifdef UNICODE
-
-/// https://web.archive.org/web/20050906124319/http://support.microsoft.com/kb/q118626/
-BOOL IsCurrentUserLocalAdministrator(void)
-{
-	BOOL   fReturn = FALSE;
-	DWORD  dwStatus;
-	DWORD  dwAccessMask;
-	DWORD  dwAccessDesired;
-	DWORD  dwACLSize;
-	DWORD  dwStructureSize = sizeof(PRIVILEGE_SET);
-	PACL   pACL = NULL;
-	PSID   psidAdmin = NULL;
-
-	HANDLE hToken = NULL;
-	HANDLE hImpersonationToken = NULL;
-
-	PRIVILEGE_SET   ps;
-	GENERIC_MAPPING GenericMapping;
-
-	PSECURITY_DESCRIPTOR     psdAdmin = NULL;
-	SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
-
-	const DWORD ACCESS_READ = 1;
-	const DWORD ACCESS_WRITE = 2;
-
-	__try
-	{
-		if (!OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY,
-
-			TRUE, &hToken))
-		{
-			if (GetLastError() != ERROR_NO_TOKEN)
-				__leave;
-
-			if (!OpenProcessToken(GetCurrentProcess(),
-
-				TOKEN_DUPLICATE | TOKEN_QUERY, &hToken))
-				__leave;
-		}
-
-		if (!DuplicateToken(hToken, SecurityImpersonation,
-
-			&hImpersonationToken))
-			__leave;
-
-		if (!AllocateAndInitializeSid(&SystemSidAuthority, 2,
-			SECURITY_BUILTIN_DOMAIN_RID,
-			DOMAIN_ALIAS_RID_ADMINS,
-			0, 0, 0, 0, 0, 0, &psidAdmin))
-			__leave;
-
-		psdAdmin = LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH);
-		if (psdAdmin == NULL)
-			__leave;
-
-		if (!InitializeSecurityDescriptor(psdAdmin,
-
-			SECURITY_DESCRIPTOR_REVISION))
-			__leave;
-
-		dwACLSize = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) +
-			GetLengthSid(psidAdmin) - sizeof(DWORD);
-
-		pACL = (PACL)LocalAlloc(LPTR, dwACLSize);
-		if (pACL == NULL)
-			__leave;
-
-		if (!InitializeAcl(pACL, dwACLSize, ACL_REVISION2))
-			__leave;
-
-		dwAccessMask = ACCESS_READ | ACCESS_WRITE;
-
-		if (!AddAccessAllowedAce(pACL, ACL_REVISION2, dwAccessMask,
-
-			psidAdmin))
-			__leave;
-
-		if (!SetSecurityDescriptorDacl(psdAdmin, TRUE, pACL, FALSE))
-			__leave;
-
-		SetSecurityDescriptorGroup(psdAdmin, psidAdmin, FALSE);
-		SetSecurityDescriptorOwner(psdAdmin, psidAdmin, FALSE);
-
-		if (!IsValidSecurityDescriptor(psdAdmin))
-			__leave;
-
-		dwAccessDesired = ACCESS_READ;
-
-		GenericMapping.GenericRead = ACCESS_READ;
-		GenericMapping.GenericWrite = ACCESS_WRITE;
-		GenericMapping.GenericExecute = 0;
-		GenericMapping.GenericAll = ACCESS_READ | ACCESS_WRITE;
-
-		if (!AccessCheck(psdAdmin, hImpersonationToken, dwAccessDesired,
-			&GenericMapping, &ps, &dwStructureSize, &dwStatus,
-			&fReturn))
-		{
-			fReturn = FALSE;
-			__leave;
-		}
-	}
-	__finally
-	{
-		if (pACL) LocalFree(pACL);
-		if (psdAdmin) LocalFree(psdAdmin);
-		if (psidAdmin) FreeSid(psidAdmin);
-		if (hImpersonationToken) CloseHandle(hImpersonationToken);
-		if (hToken) CloseHandle(hToken);
-	}
-
-	return fReturn;
-}
-
-/// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-checktokenmembership
-BOOL IsUserAdmin(VOID)
-{
-	BOOL b = FALSE;
-	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
-	PSID AdministratorsGroup;
-	b = AllocateAndInitializeSid(
-		&NtAuthority,
-		2,
-		SECURITY_BUILTIN_DOMAIN_RID,
-		DOMAIN_ALIAS_RID_ADMINS,
-		0, 0, 0, 0, 0, 0,
-		&AdministratorsGroup);
-
-	if (b)
-	{
-		typedef BOOL(WINAPI* FuncCheckTokenMembership)(HANDLE, PSID, PBOOL);
-		FuncCheckTokenMembership pCheckTokenMembership = NULL;
-		HMODULE hModule = GetModuleHandle(_T("Advapi32.dll"));
-		if (hModule)
-		{
-			pCheckTokenMembership = (FuncCheckTokenMembership)GetProcAddress(hModule, "CheckTokenMembership");
-		}
-
-		if (pCheckTokenMembership != NULL)
-		{
-			if (!pCheckTokenMembership(NULL, AdministratorsGroup, &b))
-			{
-				b = FALSE;
-			}
-		}
-		else if (IsCurrentUserLocalAdministrator()) // for NT4
-		{
-			b = TRUE;
-		}
-		else
-		{
-			b = FALSE;
-		}
-		FreeSid(AdministratorsGroup);
-	}
-
-	return(b);
-}
-#endif
-#endif

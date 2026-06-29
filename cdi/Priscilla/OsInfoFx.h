@@ -1,4 +1,4 @@
-﻿/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 //       Author : hiyohiyo
 //         Mail : hiyohiyo@crystalmark.info
 //          Web : https://crystalmark.info/
@@ -13,7 +13,6 @@
 //   OS Info
 ////------------------------------------------------
 
-#if _MSC_VER > 1310
 BOOL IsWindowsVersionOrGreaterFx(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor = 0);
 BOOL IsWindowsBuildOrGreater(DWORD build);
 BOOL IsX64();
@@ -34,14 +33,6 @@ BOOL IsWin8orLater();
 BOOL IsWin81orLater();
 BOOL IsDarkModeSupport();
 BOOL HasSidebar();
-#endif
-
-#if _MSC_VER <= 1310
-#ifdef UNICODE
-BOOL IsCurrentUserLocalAdministrator(void);
-BOOL IsUserAdmin(VOID);
-#endif
-#endif
 
 BOOL IsNT3();
 BOOL IsNT4();

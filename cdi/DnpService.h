@@ -1,4 +1,4 @@
-﻿// http://www.dinop.com/vc/service_ctrl.html (ja)
+// http://www.dinop.com/vc/service_ctrl.html (ja)
 
 #pragma once
 
@@ -70,7 +70,7 @@ class	CDnpService
 				return false;
 			}
 	
-			hService = ::OpenService(hManager, pszName, SERVICE_START | SERVICE_QUERY_STATUS);
+			hService = ::OpenService(hManager, pszName, SERVICE_START | SERVICE_QUERY_STATUS | SERVICE_CHANGE_CONFIG);
 			if(hService == NULL)
 			{
 				if(hManager){::CloseServiceHandle(hManager);}
@@ -125,8 +125,9 @@ class	CDnpService
 				count++;
 			}
 				
-			// サービスの起動モードを auto に強制変更
-			ShellExecute(NULL, NULL, _T("sc"), _T("config Winmgmt start= auto"), NULL, SW_HIDE);
+			// サービスの起動モードを auto に強制変更 (use API instead of ShellExecute)
+			::ChangeServiceConfig(hService, SERVICE_NO_CHANGE, SERVICE_AUTO_START,
+				SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 			count = 0;
 			DebugPrint(_T("QueryServiceStatus - 2"));
 			while(::QueryServiceStatus(hService, &sStatus))
