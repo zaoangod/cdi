@@ -86,8 +86,7 @@ jobs:
         run: |
           gh release delete latest --cleanup-tag --yes
         env:
-          #GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          GH_TOKEN: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new release
         run: |
@@ -97,5 +96,4 @@ jobs:
             --title "Build-$date_version" `
             --notes-file "release_notes.txt"
         env:
-          #GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

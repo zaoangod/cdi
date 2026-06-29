@@ -1,4 +1,4 @@
-﻿/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 //       Author : hiyohiyo
 //         Mail : hiyohiyo@crystalmark.info
 //          Web : https://crystalmark.info/
@@ -13,7 +13,6 @@
 //   OS Info
 ////------------------------------------------------
 
-#if _MSC_VER > 1310
 BOOL IsWindowsVersionOrGreaterFx(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor = 0);
 BOOL IsWindowsBuildOrGreater(DWORD build);
 BOOL IsX64();
@@ -25,35 +24,13 @@ BOOL IsIe556();
 BOOL IsDotNet2();
 BOOL IsDotNet4();
 BOOL IsDotNet48();
-BOOL IsNT5();
 BOOL IsNT6orLater();
-BOOL IsWin2k();
-BOOL IsWinXpOrLater();
-BOOL IsWinXpLuna();
 BOOL IsWin8orLater();
 BOOL IsWin81orLater();
 BOOL IsDarkModeSupport();
-BOOL HasSidebar();
-#endif
 
-#if _MSC_VER <= 1310
-#ifdef UNICODE
-BOOL IsCurrentUserLocalAdministrator(void);
-BOOL IsUserAdmin(VOID);
-#endif
-#endif
-
-BOOL IsNT3();
-BOOL IsNT4();
-BOOL IsWin9x();
-BOOL IsWin95();
-BOOL IsWin95First();
-BOOL IsPC98();
-BOOL IsNT51orlater();
 BOOL IsRunningOnWine();
 
-DWORD GetIeVersion();
-// DWORD GetWin10Version();
 void GetOsName(CString& osFullName, CString& osName, CString& osVersion, CString& osArchitecture);
 void GetOsNameWmi(CString& osFullName);
 
